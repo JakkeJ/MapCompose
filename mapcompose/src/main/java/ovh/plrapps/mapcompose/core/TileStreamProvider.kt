@@ -1,6 +1,7 @@
 package ovh.plrapps.mapcompose.core
 
-import java.io.InputStream
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Defines how tiles should be fetched. It must be supplied as part of the configuration of
@@ -20,5 +21,5 @@ import java.io.InputStream
  * unrecoverable failures.
  */
 fun interface TileStreamProvider {
-    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): InputStream?
+    suspend fun getTileStream(row: Int, col: Int, zoomLvl: Int): Any?
 }
