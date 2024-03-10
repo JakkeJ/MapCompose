@@ -46,7 +46,7 @@ internal fun TileCanvas(
     val placeholderBitmap = remember {
         val options = BitmapFactory.Options()
         options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
-        BitmapFactory.decodeResource(context.resources, R.mipmap.mongny, options)
+        BitmapFactory.decodeResource(context.resources, R.drawable.mongny, options)
     }
 
     Canvas(
@@ -66,7 +66,6 @@ internal fun TileCanvas(
             scale(scale = zoomPRState.scale, Offset.Zero)
         }) {
             paint.isFilterBitmap = isFilteringBitmap()
-
             for (tile in tilesToRender) {
                 val isLoading = if (loadingStates is Map) {
                     loadingStates.getOrDefault(TileKey(tile.row, tile.col, tile.zoom), true)
