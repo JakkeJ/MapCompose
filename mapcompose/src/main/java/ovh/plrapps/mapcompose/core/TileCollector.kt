@@ -52,6 +52,7 @@ internal class TileCollector(
 ) {
     @Volatile
     var isIdle: Boolean = true
+    
 
     /**
      * Sets up the tile collector machinery. The architecture is inspired from
