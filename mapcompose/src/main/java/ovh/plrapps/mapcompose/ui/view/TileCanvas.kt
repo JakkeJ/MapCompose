@@ -48,12 +48,6 @@ internal fun TileCanvas(
         options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
         BitmapFactory.decodeResource(context.resources, R.drawable.loading_animation, options)
     }
-    val bitmap = remember {
-        val options = BitmapFactory.Options()
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
-        BitmapFactory.decodeResource(context.resources, R.drawable.mongny, options)
-    }
-
 
     Canvas(
         modifier = modifier
@@ -84,8 +78,7 @@ internal fun TileCanvas(
                         it.nativeCanvas.drawBitmap(placeholderBitmap, null, dest, paint)
                     }
                 } else {
-
-                    //val bitmap = tile.bitmap ?: continue
+                    val bitmap = tile.bitmap ?: continue
                     val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
                         ?: continue
                     val tileScaled = (tileSize / scaleForLevel).toInt()
