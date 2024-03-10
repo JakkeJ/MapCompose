@@ -2,6 +2,7 @@ package ovh.plrapps.mapcompose.core
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
@@ -18,10 +19,11 @@ internal data class Tile(
     val col: Int,
     val subSample: Int,
     val layerIds: List<String>,
-    val opacities: List<Float>
+    val opacities: List<Float>,
+    val isLoading: Boolean = true
 ) {
     var bitmap: Bitmap? = null
-    var alpha: Float by mutableStateOf(0f)
+    var alpha: Float by mutableFloatStateOf(0f)
 }
 
 internal data class TileSpec(val zoom: Int, val row: Int, val col: Int, val subSample: Int = 0)

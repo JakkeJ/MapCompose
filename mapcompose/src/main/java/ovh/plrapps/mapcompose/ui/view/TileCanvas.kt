@@ -1,7 +1,11 @@
 package ovh.plrapps.mapcompose.ui.view
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.graphics.Rect
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,9 +17,12 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
+import ovh.plrapps.mapcompose.R
 import ovh.plrapps.mapcompose.core.*
 import ovh.plrapps.mapcompose.ui.state.ZoomPanRotateState
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 internal fun TileCanvas(
     modifier: Modifier,
@@ -26,12 +33,20 @@ internal fun TileCanvas(
     colorFilterProvider: ColorFilterProvider?,
     tilesToRender: List<Tile>,
     isFilteringBitmap: () -> Boolean,
+    isLoading: (row: Int, col: Int, zoom: Int) -> Boolean,
+    loadingStates: Map<TileKey, Boolean>
 ) {
     val dest = remember { Rect() }
     val paint: Paint = remember {
         Paint().apply {
             isAntiAlias = false
         }
+    }
+    val context = LocalContext.current // Get the context
+    val placeholderBitmap = remember {
+        val options = BitmapFactory.Options()
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
+        BitmapFactory.decodeResource(context.resources, R.mipmap.mongny, options)
     }
 
     Canvas(
@@ -53,28 +68,40 @@ internal fun TileCanvas(
             paint.isFilterBitmap = isFilteringBitmap()
 
             for (tile in tilesToRender) {
-                val bitmap = tile.bitmap ?: continue
-                val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
-                    ?: continue
-                val tileScaled = (tileSize / scaleForLevel).toInt()
-                val l = tile.col * tileScaled
-                val t = tile.row * tileScaled
-                val r = l + tileScaled
-                val b = t + tileScaled
-                dest.set(l, t, r, b)
-
-                val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
-
-                paint.alpha = (tile.alpha * 255).toInt()
-                paint.colorFilter = colorFilter?.asAndroidColorFilter()
-
-                drawIntoCanvas {
-                    it.nativeCanvas.drawBitmap(bitmap, null, dest, paint)
+                val isLoading = if (loadingStates is Map) {
+                    loadingStates.getOrDefault(TileKey(tile.row, tile.col, tile.zoom), true)
+                } else {
+                    isLoading(tile.row, tile.col, tile.zoom)
                 }
 
-                /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
-                if (tile.alpha < 1f) {
-                    tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
+                if (isLoading) {
+                    drawIntoCanvas {
+                        it.nativeCanvas.drawBitmap(placeholderBitmap, null, dest, paint)
+                    }
+                } else {
+                    val bitmap = tile.bitmap ?: continue
+                    val scaleForLevel = visibleTilesResolver.getScaleForLevel(tile.zoom)
+                        ?: continue
+                    val tileScaled = (tileSize / scaleForLevel).toInt()
+                    val l = tile.col * tileScaled
+                    val t = tile.row * tileScaled
+                    val r = l + tileScaled
+                    val b = t + tileScaled
+                    dest.set(l, t, r, b)
+
+                    val colorFilter = colorFilterProvider?.getColorFilter(tile.row, tile.col, tile.zoom)
+
+                    paint.alpha = (tile.alpha * 255).toInt()
+                    paint.colorFilter = colorFilter?.asAndroidColorFilter()
+
+                    drawIntoCanvas {
+                        it.nativeCanvas.drawBitmap(bitmap, null, dest, paint)
+                    }
+
+                    /* If a tile isn't fully opaque, increase its alpha state by the alpha tick */
+                    if (tile.alpha < 1f) {
+                        tile.alpha = (tile.alpha + alphaTick).coerceAtMost(1f)
+                    }
                 }
             }
         }
