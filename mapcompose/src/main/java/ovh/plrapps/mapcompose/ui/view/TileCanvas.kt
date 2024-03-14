@@ -48,6 +48,12 @@ internal fun TileCanvas(
         options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
         BitmapFactory.decodeResource(context.resources, R.drawable.placeholder, options)
     }
+    val bitmap = remember {
+        val options = BitmapFactory.Options()
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888  // Or a suitable config
+        BitmapFactory.decodeResource(context.resources, R.drawable.placeholder, options)
+    }
+
 
     Canvas(
         modifier = modifier
